@@ -53,9 +53,21 @@ async def procces_category_food(message: types.Message, state: FSMContext):
 async def procces_confirm(message: types.Message, state: FSMContext):
     data = await state.get_data()
     print(data)
+    database.execute(
+        query="""
+        INSERT INTO dishes (name_food, price, category_food)
+        VALUES (?, ?, ?)
+        """,
+        params=(
+            data['name_food'],
+            data['price'],
+            data['category_food']
+        )
+    )
     await state.clear()
     kb = types.ReplyKeyboardRemove()
     await message.answer("Данные были сохранены!", reply_markup=kb)
+
 
 @admin_pizza_router.message(PizzaReview.confirm, F.text == 'Нет')
 async def procces_not_confirmed(message: types.Message, state: FSMContext):

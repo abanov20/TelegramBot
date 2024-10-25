@@ -19,6 +19,14 @@ class Database:
                     )
                 """)
 
+            connection.execute("""
+            CREATE TABLE IF NOT EXISTS dishes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name_food TEXT,
+            price INTEGER,
+            category_food TEXT
+            )""")
+
             connection.commit()
 
     def execute(self, query: str, params: tuple = None):
@@ -27,3 +35,10 @@ class Database:
             connection.commit()
 
 
+    def fetch(self, query: str, params: tuple = ()):
+        with sqlite3.connect(self.path) as connect:
+            result = connect.execute(query, params)
+            result.row_factory = sqlite3.Row
+
+            data = result.fetchall()
+            return [dict(row) for row in data]

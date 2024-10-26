@@ -1,7 +1,8 @@
 from aiogram import Router, F, types
 from aiogram.filters.command import Command
 
-unique_users = set()
+from bot_config import database
+
 
 start_router = Router()
 
@@ -10,10 +11,23 @@ async def command_start(message: types.Message):
     user_id = message.from_user.id
     name = message.from_user.first_name
 
-    if user_id not in unique_users:
-        unique_users.add(user_id)
+    check_user = database.execute(
+        query="SELECT * FROM users WHERE tg_id = ?",
+        params=(user_id,)
+    ).fetchone()
 
-    unique_user_count = len(unique_users)
+    print(check_user)
+    if check_user is None:
+        database.execute(
+            query="INSERT INTO users (tg_id, first_name) VALUES (?, ?)",
+            params=(user_id, name)
+        )
+
+    total_user = database.execute(
+        query="SELECT COUNT(*) FROM users WHERE tg_id = ?",
+        params=(user_id,)
+    ).fetchone()
+
     kb = types.InlineKeyboardMarkup(
         inline_keyboard=[
             [
@@ -56,7 +70,7 @@ async def command_start(message: types.Message):
 
     )
     await message.reply(
-        f'Привет {name}, наш бот обслуживает уже {unique_user_count} пользователей!',
+        f'Привет {name}, наш бот обслуживает уже {total_user} пользователей!',
         reply_markup=kb
     )
 

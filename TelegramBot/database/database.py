@@ -15,6 +15,7 @@ class Database:
                     visit_date DATETIME,
                     food_rating INTEGER,
                     cleanliness_rating INTEGER,
+                    tg_id INTEGER,
                     comment TEXT
                     )
                 """)
@@ -27,12 +28,21 @@ class Database:
             category_food TEXT
             )""")
 
+            connection.execute("""
+            CREATE TABLE IF NOT EXISTS users(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tg_id INTEGER,
+            first_name TEXT
+            )""")
+
             connection.commit()
 
-    def execute(self, query: str, params: tuple = None):
+    def execute(self, query: str, params: tuple = ()):
         with sqlite3.connect(self.path) as connection:
-            connection.execute(query, params)
+            cursor = connection.cursor()
+            cursor.execute(query, params)
             connection.commit()
+            return cursor
 
 
     def fetch(self, query: str, params: tuple = ()):
